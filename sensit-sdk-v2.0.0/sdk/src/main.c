@@ -17,7 +17,7 @@
 #include "hts221.h"
 #include "ltr329.h"
 #include "fxos8700.h"
-
+#include "discovery.h"
 
 /******* GLOBAL VARIABLES ******************************************/
 u8 firmware_version[] = "TEMPLATE";
@@ -29,8 +29,13 @@ int main()
 {
     error_t err;
     button_e btn;
+
     u16 battery_level;
 
+    /* Discovery payload variable */
+    discovery_data_s data = {0};
+    discovery_payload_s payload;
+    
     /* Start of initialization */
 
     /* Configure button */
@@ -38,18 +43,6 @@ int main()
 
     /* Initialize Sens'it radio */
     err = RADIO_API_init();
-    ERROR_parser(err);
-
-    /* Initialize temperature & humidity sensor */
-    err = HTS221_init();
-    ERROR_parser(err);
-
-    /* Initialize light sensor */
-    err = LTR329_init();
-    ERROR_parser(err);
-
-    /* Initialize accelerometer */
-    err = FXOS8700_init();
     ERROR_parser(err);
 
     /* Clear pending interrupt */
@@ -82,7 +75,29 @@ int main()
 
             /* RGB Led OFF */
             SENSIT_API_set_rgb_led(RGB_OFF);
-
+            
+            if (btn == BUTTON_TWO_PRESSES)
+            {
+               
+                /* Send SOS message */
+            
+                /* Send the message */
+                err = RADIO_API_send_message(RGB_RED, (u8*)"A", 1, FALSE, NULL);
+                /* Parse the error code */
+                ERROR_parser(err);
+                
+            }
+            
+            if (btn == BUTTON_THREE_PRESSES)
+            {
+           
+                /* Send cool message */
+                err = RADIO_API_send_message(RGB_GREEN, (u8*)"B", 1, FALSE, NULL);
+                /* Parse the error code */
+                ERROR_parser(err);
+                
+            }
+            
             if (btn == BUTTON_FOUR_PRESSES)
             {
                 /* Reset the device */
@@ -100,19 +115,13 @@ int main()
             pending_interrupt &= ~INTERRUPT_MASK_REED_SWITCH;
         }
 
-        /* Accelerometer interrupt handler */
-        if ((pending_interrupt & INTERRUPT_MASK_FXOS8700) == INTERRUPT_MASK_FXOS8700)
-        {
-            /* Clear interrupt */
-            pending_interrupt &= ~INTERRUPT_MASK_FXOS8700;
-        }
-
         /* Check if all interrupt have been clear */
         if (pending_interrupt == 0)
         {
             /* Wait for Interrupt */
             SENSIT_API_sleep(FALSE);
         }
+        
     } /* End of while */
 }
 

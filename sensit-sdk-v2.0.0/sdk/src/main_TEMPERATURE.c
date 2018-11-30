@@ -135,7 +135,9 @@ int main()
             DISCOVERY_build_payload(&payload, MODE_TEMPERATURE, &data);
 
             /* Send the message */
-            err = RADIO_API_send_message(RGB_GREEN, (u8*)&payload, DISCOVERY_PAYLOAD_SIZE, FALSE, NULL);
+            /*err = RADIO_API_send_message(RGB_GREEN, (u8*)&payload, DISCOVERY_PAYLOAD_SIZE, FALSE, NULL);
+            */
+            err = RADIO_API_send_message(RGB_GREEN, (u8*)"A", DISCOVERY_PAYLOAD_SIZE, FALSE, NULL);
             /* Parse the error code */
             ERROR_parser(err);
 
